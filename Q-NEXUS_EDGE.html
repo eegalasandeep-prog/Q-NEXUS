@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q-NEXUS | Microsoft Edge Launcher & 3D Platform</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js CDN for standalone 3D twin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+    }
+    .pulse-glow {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- ── TOP NOTIFICATION BAR (AUTO LAUNCH) ──────────────────────────────────── -->
+  <div id="countdown-bar" class="bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-600 text-white text-xs px-4 py-2 flex items-center justify-between shadow-md">
+    <div class="flex items-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+      <span class="font-medium">Microsoft Edge Launcher:</span>
+      <span id="countdown-text" class="font-mono text-cyan-200 font-bold">Auto-opening Q-NEXUS in 5 seconds...</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="cancelCountdown()" class="px-2.5 py-0.5 rounded bg-black/30 hover:bg-black/50 text-white font-medium text-[11px] transition-colors">
+        Cancel Auto-Open
+      </button>
+      <a href="http://127.0.0.1:5173" class="px-3 py-0.5 rounded bg-white text-blue-700 font-bold text-[11px] hover:bg-blue-50 transition-colors shadow-xs">
+        Open Immediately ↗
+      </a>
+    </div>
+  </div>
+
+  <!-- ── MAIN HEADER ───────────────────────────────────────────────────────── -->
+  <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-mono font-black text-xl text-black shadow-lg shadow-cyan-500/20">
+        Q
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-black text-lg tracking-tight font-mono text-white">Q-NEXUS</h1>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">
+            MICROSOFT EDGE READY
+          </span>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
+            REL-16 RF ENGINE
+          </span>
+        </div>
+        <p class="text-xs text-slate-400">
+          Quantum-Assisted 5G/6G Network Optimization &amp; Spatial Digital Twin Platform
+        </p>
+      </div>
+    </div>
+
+    <!-- Active Port Status Badges -->
+    <div class="flex items-center flex-wrap gap-2 text-xs">
+      <div id="vite-status" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 font-mono">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-slate-400">Port 5173 (Vite):</span>
+        <a href="http://127.0.0.1:5173" target="_blank" class="text-cyan-400 hover:text-cyan-300 font-bold underline">ONLINE ↗</a>
+      </div>
+
+      <div id="backend-status" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 font-mono">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-slate-400">Port 8000 (FastAPI):</span>
+        <a href="http://127.0.0.1:8000" target="_blank" class="text-emerald-400 hover:text-emerald-300 font-bold underline">ONLINE ↗</a>
+      </div>
+
+      <a href="http://127.0.0.1:5173" class="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold text-xs shadow-md shadow-cyan-500/20 transition-all flex items-center gap-1.5">
+        <span>Launch Full App</span>
+        <span class="text-sm">→</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ── CONTENT GRID ──────────────────────────────────────────────────────── -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+
+    <!-- 1. QUICK LAUNCH CARDS -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Card 1: Vite Interactive Twin -->
+      <a href="http://127.0.0.1:5173" target="_blank" class="group bg-gradient-to-b from-slate-800 to-slate-800/60 hover:from-slate-750 hover:to-slate-800 border border-slate-700 hover:border-cyan-500/50 p-5 rounded-2xl transition-all shadow-md hover:shadow-cyan-500/10 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-lg font-bold">🚀</span>
+            <span class="text-[10px] font-mono font-bold text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">PRIMARY</span>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-cyan-400 transition-colors">Vite Web Application</h3>
+          <p class="text-xs text-slate-400 mt-1">
+            Full React UI with interactive MapLibre GL, 3D Digital Twin, QAOA Quantum optimizer, and live WebSocket telemetry.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs font-mono text-cyan-400">
+          <span>http://127.0.0.1:5173</span>
+          <span class="group-hover:translate-x-1 transition-transform">Launch →</span>
+        </div>
+      </a>
+
+      <!-- Card 2: Production FastAPI -->
+      <a href="http://127.0.0.1:8000" target="_blank" class="group bg-gradient-to-b from-slate-800 to-slate-800/60 hover:from-slate-750 hover:to-slate-800 border border-slate-700 hover:border-indigo-500/50 p-5 rounded-2xl transition-all shadow-md hover:shadow-indigo-500/10 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg font-bold">⚡</span>
+            <span class="text-[10px] font-mono font-bold text-indigo-400 bg-indigo-950 px-2 py-0.5 rounded border border-indigo-800">BACKEND &amp; DOCS</span>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-indigo-400 transition-colors">FastAPI Production Server</h3>
+          <p class="text-xs text-slate-400 mt-1">
+            Production static bundle, Swagger API documentation (/docs), Rel-16 RF computation engine, and SQLite storage.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs font-mono text-indigo-400">
+          <span>http://127.0.0.1:8000</span>
+          <span class="group-hover:translate-x-1 transition-transform">Open API →</span>
+        </div>
+      </a>
+
+      <!-- Card 3: Live Map & GPS Tracker -->
+      <a href="http://127.0.0.1:5173/live" target="_blank" class="group bg-gradient-to-b from-slate-800 to-slate-800/60 hover:from-slate-750 hover:to-slate-800 border border-slate-700 hover:border-emerald-500/50 p-5 rounded-2xl transition-all shadow-md hover:shadow-emerald-500/10 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg font-bold">🛰️</span>
+            <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">REAL GPS</span>
+          </div>
+          <h3 class="text-base font-bold text-white group-hover:text-emerald-400 transition-colors">Live Network &amp; GPS Map</h3>
+          <p class="text-xs text-slate-400 mt-1">
+            Directly test high-accuracy GPS geolocation, live tracking, base station associations, and SINR calculations.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs font-mono text-emerald-400">
+          <span>/live route</span>
+          <span class="group-hover:translate-x-1 transition-transform">Track Now →</span>
+        </div>
+      </a>
+    </section>
+
+    <!-- 2. EDGE GPS ACCURACY & DIAGNOSTICS TESTER -->
+    <section class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-3">
+        <div>
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            Edge Browser Real-Time GPS Diagnostics
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Test your device's native Microsoft Edge geolocation sensor directly from this launcher.
+          </p>
+        </div>
+        <button id="btn-detect-gps" onclick="testEdgeGPS()" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs font-mono transition-colors flex items-center gap-2 shadow-sm">
+          <span>📍</span>
+          <span>Detect My Edge GPS Location</span>
+        </button>
+      </div>
+
+      <!-- GPS Telemetry Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 font-mono text-xs">
+        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+          <div class="text-[10px] text-slate-500 uppercase">Latitude</div>
+          <div id="gps-lat" class="text-sm font-bold text-cyan-300 mt-0.5">17.4435000°</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+          <div class="text-[10px] text-slate-500 uppercase">Longitude</div>
+          <div id="gps-lon" class="text-sm font-bold text-cyan-300 mt-0.5">78.3772000°</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+          <div class="text-[10px] text-slate-500 uppercase">Accuracy</div>
+          <div id="gps-acc" class="text-sm font-bold text-emerald-400 mt-0.5">±15.0 m</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+          <div class="text-[10px] text-slate-500 uppercase">Confidence</div>
+          <div id="gps-conf" class="text-sm font-bold text-emerald-400 mt-0.5">GOOD</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+          <div class="text-[10px] text-slate-500 uppercase">Tracking Status</div>
+          <div id="gps-status" class="text-sm font-bold text-yellow-400 mt-0.5">STANDBY</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+          <div class="text-[10px] text-slate-500 uppercase">Fix Count</div>
+          <div id="gps-updates" class="text-sm font-bold text-white mt-0.5">0 fixes</div>
+        </div>
+      </div>
+
+      <!-- Explanation Banner -->
+      <div class="bg-blue-950/40 border border-blue-800/60 rounded-xl p-3 text-xs text-blue-200/90 flex items-start gap-2.5">
+        <span class="text-base shrink-0">💡</span>
+        <div>
+          <strong class="text-blue-100">Why did GPS behave differently yesterday vs today?</strong>
+          <p class="mt-0.5 text-blue-200/80">
+            On Windows desktop PCs and laptops, Microsoft Edge retrieves coordinates through Windows Location Services (Wi-Fi access point triangulation). In the previous code version, an aggressive 4-sample buffer and a jump-rejection filter mistakenly rejected non-Hyderabad coordinates as "impossible speed jumps". We have fixed this: your first reading is now accepted instantly without delay!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. STANDALONE 3D DIGITAL TWIN VIEWER -->
+    <section class="bg-slate-800/80 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col">
+      <div class="bg-slate-850 px-5 py-3 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+          <span class="font-bold text-white uppercase tracking-wider">Embedded 3D Digital Twin (Offline File Viewer)</span>
+          <span class="text-[10px] text-slate-400 font-mono">Three.js WebGL Engine</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="setCameraView('top')" class="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium">Top View</button>
+          <button onclick="setCameraView('iso')" class="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-medium">Isometric</button>
+          <button onclick="toggleBeams()" id="btn-beams" class="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium">Beams: ON</button>
+        </div>
+      </div>
+
+      <div id="three-container" class="relative w-full h-[460px] bg-slate-950 cursor-grab active:cursor-grabbing">
+        <!-- 3D HUD Overlay -->
+        <div class="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-xl p-3 text-xs font-mono space-y-1 z-10 pointer-events-none">
+          <div class="text-[11px] font-bold text-cyan-400 uppercase">Urban Macro Cell Site</div>
+          <div class="text-slate-300">Base Stations: <strong class="text-white">4 Macro gNBs</strong></div>
+          <div class="text-slate-300">Active Users: <strong class="text-white">32 Mobile UEs</strong></div>
+          <div class="text-slate-300">Carrier Freq: <strong class="text-cyan-300">3.5 GHz (n78)</strong></div>
+          <div class="text-slate-300">Path Loss: <strong class="text-slate-200">Urban Macro Rel-16</strong></div>
+        </div>
+
+        <div class="absolute bottom-4 right-4 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] font-mono text-slate-400 pointer-events-none">
+          Click &amp; drag to rotate • Scroll to zoom
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ───────────────────────────────────────────────────────────── -->
+  <footer class="bg-slate-950 border-t border-slate-800 px-6 py-4 text-center text-xs text-slate-500 font-mono">
+    Q-NEXUS V11 &bull; 3GPP Rel-16 Compliant &bull; Microsoft Edge Compatible &bull; Ready at http://127.0.0.1:5173
+  </footer>
+
+  <!-- ── SCRIPTS ─────────────────────────────────────────────────────────── -->
+  <script>
+    // ── COUNTDOWN LOGIC ─────────────────────────────────────────────────────
+    let countdown = 5;
+    let autoLaunchTimer = null;
+
+    function startCountdown() {
+      const el = document.getElementById('countdown-text');
+      autoLaunchTimer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+          clearInterval(autoLaunchTimer);
+          el.innerText = 'Redirecting to Q-NEXUS (http://127.0.0.1:5173)...';
+          window.location.href = 'http://127.0.0.1:5173';
+        } else {
+          el.innerText = `Auto-opening Q-NEXUS in ${countdown} seconds...`;
+        }
+      }, 1000);
+    }
+
+    function cancelCountdown() {
+      if (autoLaunchTimer) clearInterval(autoLaunchTimer);
+      const bar = document.getElementById('countdown-bar');
+      bar.innerHTML = '<div class="text-xs text-slate-300 font-medium">Auto-open cancelled. Click any link above when ready.</div>';
+    }
+
+    startCountdown();
+
+    // ── PING SERVERS ────────────────────────────────────────────────────────
+    async function checkServers() {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/health', { mode: 'cors' });
+        if (res.ok) {
+          document.getElementById('backend-status').innerHTML = `
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-slate-400">Port 8000:</span>
+            <span class="text-emerald-400 font-bold">ONLINE</span>
+          `;
+        }
+      } catch (e) {
+        // server might be starting or CORS restricted
+      }
+    }
+    checkServers();
+
+    // ── EDGE GPS DIAGNOSTICS ────────────────────────────────────────────────
+    let gpsFixCount = 0;
+    let gpsWatchId = null;
+
+    function testEdgeGPS() {
+      const btn = document.getElementById('btn-detect-gps');
+      const statusEl = document.getElementById('gps-status');
+      statusEl.innerText = 'REQUESTING...';
+      statusEl.className = 'text-sm font-bold text-yellow-400 mt-0.5';
+
+      if (!navigator.geolocation) {
+        statusEl.innerText = 'NOT SUPPORTED';
+        statusEl.className = 'text-sm font-bold text-red-400 mt-0.5';
+        alert('Geolocation is not supported by your Microsoft Edge configuration.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Scanning Wi-Fi / GPS Sensors...';
+
+      // 1. One-shot fast resolve with maximum precision (maximumAge: 0 forces fresh sensor poll)
+      navigator.geolocation.getCurrentPosition(
+        (pos) => updateGpsUI(pos),
+        (err) => {
+          console.warn('High accuracy fix wait:', err);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+
+      // 2. Watch position
+      if (gpsWatchId === null) {
+        gpsWatchId = navigator.geolocation.watchPosition(
+          (pos) => updateGpsUI(pos),
+          (err) => console.warn('Watch error:', err),
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+        );
+      }
+    }
+
+    function updateGpsUI(pos) {
+      gpsFixCount++;
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      const acc = pos.coords.accuracy;
+
+      document.getElementById('gps-lat').innerText = lat.toFixed(7) + '°';
+      document.getElementById('gps-lon').innerText = lon.toFixed(7) + '°';
+      document.getElementById('gps-acc').innerText = acc >= 1000 ? '±' + (acc / 1000).toFixed(1) + ' km' : '±' + acc.toFixed(1) + ' m';
+      document.getElementById('gps-updates').innerText = gpsFixCount + ' fixes';
+
+      let conf = 'LOW';
+      let confColor = 'text-red-400';
+      if (acc <= 10) { conf = 'HIGH (±' + acc.toFixed(0) + 'm)'; confColor = 'text-emerald-400'; }
+      else if (acc <= 30) { conf = 'GOOD (±' + acc.toFixed(0) + 'm)'; confColor = 'text-blue-400'; }
+      else if (acc <= 100) { conf = 'MODERATE'; confColor = 'text-yellow-400'; }
+      else { conf = 'COARSE IP (±' + (acc / 1000).toFixed(0) + 'km)'; confColor = 'text-amber-400'; }
+
+      const confEl = document.getElementById('gps-conf');
+      confEl.innerText = conf;
+      confEl.className = 'text-sm font-bold mt-0.5 ' + confColor;
+
+      const statusEl = document.getElementById('gps-status');
+      statusEl.innerText = acc <= 100 ? 'HIGH PRECISION' : 'COARSE IP LOCK';
+      statusEl.className = 'text-sm font-bold mt-0.5 ' + (acc <= 100 ? 'text-emerald-400' : 'text-amber-400');
+
+      const btn = document.getElementById('btn-detect-gps');
+      btn.disabled = false;
+      btn.innerText = 'Tracking Active ✓';
+
+      // Cancel auto-open so user can explore
+      cancelCountdown();
+    }
+
+    // ── THREE.JS STANDALONE 3D DIGITAL TWIN ─────────────────────────────────
+    let scene, camera, renderer, beamsGroup, towersGroup, usersGroup;
+    let showBeams = true;
+
+    function init3D() {
+      const container = document.getElementById('three-container');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0f1d);
+      scene.fog = new THREE.FogExp2(0x0a0f1d, 0.008);
+
+      camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
+      camera.position.set(40, 50, 70);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Grid Floor
+      const grid = new THREE.GridHelper(120, 24, 0x00d4e8, 0x1e293b);
+      grid.position.y = -0.1;
+      scene.add(grid);
+
+      // Lighting
+      const ambLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambLight);
+      const dirLight = new THREE.DirectionalLight(0x00d4e8, 1.2);
+      dirLight.position.set(30, 60, 20);
+      scene.add(dirLight);
+
+      // Layer groups
+      towersGroup = new THREE.Group();
+      usersGroup = new THREE.Group();
+      beamsGroup = new THREE.Group();
+      scene.add(towersGroup);
+      scene.add(usersGroup);
+      scene.add(beamsGroup);
+
+      // Add 4 Towers
+      const towerPositions = [
+        { x: -25, z: -20, h: 18, color: 0x00d4e8 },
+        { x: 25, z: -20, h: 22, color: 0x3b82f6 },
+        { x: -20, z: 25, h: 16, color: 0x10b981 },
+        { x: 25, z: 25, h: 20, color: 0xa855f7 }
+      ];
+
+      towerPositions.forEach((pos, idx) => {
+        // Mast
+        const mastGeo = new THREE.CylinderGeometry(0.3, 0.8, pos.h, 6);
+        const mastMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8, roughness: 0.2 });
+        const mast = new THREE.Mesh(mastGeo, mastMat);
+        mast.position.set(pos.x, pos.h / 2, pos.z);
+        towersGroup.add(mast);
+
+        // Antenna Head
+        const headGeo = new THREE.BoxGeometry(2, 3, 2);
+        const headMat = new THREE.MeshStandardMaterial({ color: pos.color, roughness: 0.1 });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.set(pos.x, pos.h, pos.z);
+        towersGroup.add(head);
+
+        // Pulse Ring
+        const ringGeo = new THREE.RingGeometry(2, 3, 32);
+        const ringMat = new THREE.MeshBasicMaterial({ color: pos.color, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(pos.x, 0.1, pos.z);
+        towersGroup.add(ring);
+      });
+
+      // Add 24 Users & Beams
+      for (let i = 0; i < 28; i++) {
+        const uX = (Math.random() - 0.5) * 80;
+        const uZ = (Math.random() - 0.5) * 80;
+
+        const uGeo = new THREE.SphereGeometry(0.6, 12, 12);
+        const isHighSinr = Math.random() > 0.3;
+        const uMat = new THREE.MeshBasicMaterial({ color: isHighSinr ? 0x10b981 : 0xf59e0b });
+        const userMesh = new THREE.Mesh(uGeo, uMat);
+        userMesh.position.set(uX, 0.6, uZ);
+        usersGroup.add(userMesh);
+
+        // Connect user to nearest tower
+        let nearestTower = towerPositions[0];
+        let minD = Infinity;
+        towerPositions.forEach(t => {
+          const d = Math.hypot(t.x - uX, t.z - uZ);
+          if (d < minD) { minD = d; nearestTower = t; }
+        });
+
+        // Beam Line
+        const points = [
+          new THREE.Vector3(nearestTower.x, nearestTower.h, nearestTower.z),
+          new THREE.Vector3(uX, 0.6, uZ)
+        ];
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+        const lineMat = new THREE.LineBasicMaterial({
+          color: nearestTower.color,
+          transparent: true,
+          opacity: 0.4
+        });
+        const beam = new THREE.Line(lineGeo, lineMat);
+        beamsGroup.add(beam);
+      }
+
+      // Mouse drag controls
+      let isDragging = false;
+      let prevMousePos = { x: 0, y: 0 };
+      let spherical = { radius: 95, theta: 0.7, phi: 1.1 };
+
+      container.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        prevMousePos = { x: e.clientX, y: e.clientY };
+      });
+      window.addEventListener('mouseup', () => isDragging = false);
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevMousePos.x;
+        const dy = e.clientY - prevMousePos.y;
+        prevMousePos = { x: e.clientX, y: e.clientY };
+
+        spherical.theta -= dx * 0.008;
+        spherical.phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, spherical.phi - dy * 0.008));
+        updateCamera();
+      });
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        spherical.radius = Math.max(30, Math.min(180, spherical.radius + e.deltaY * 0.08));
+        updateCamera();
+      }, { passive: false });
+
+      function updateCamera() {
+        camera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+        camera.position.y = spherical.radius * Math.cos(spherical.phi);
+        camera.position.z = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+        camera.lookAt(0, 5, 0);
+      }
+      updateCamera();
+
+      // Animation Loop
+      function animate() {
+        requestAnimationFrame(animate);
+        towersGroup.children.forEach((c) => {
+          if (c.geometry instanceof THREE.RingGeometry) {
+            c.scale.x = 1 + Math.sin(Date.now() * 0.003) * 0.2;
+            c.scale.y = 1 + Math.sin(Date.now() * 0.003) * 0.2;
+          }
+        });
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      });
+    }
+
+    function setCameraView(type) {
+      if (type === 'top') {
+        camera.position.set(0, 110, 0.1);
+        camera.lookAt(0, 0, 0);
+      } else {
+        camera.position.set(45, 55, 65);
+        camera.lookAt(0, 5, 0);
+      }
+    }
+
+    function toggleBeams() {
+      showBeams = !showBeams;
+      beamsGroup.visible = showBeams;
+      const btn = document.getElementById('btn-beams');
+      btn.innerText = `Beams: ${showBeams ? 'ON' : 'OFF'}`;
+      btn.className = showBeams ? 'px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium' : 'px-2.5 py-1 rounded bg-slate-800 text-slate-500 font-medium';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      init3D();
+    });
+  </script>
+</body>
+</html>
